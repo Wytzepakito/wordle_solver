@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, borrow::Cow};
 
 pub mod algorithms;
 
@@ -26,7 +26,7 @@ impl Wordle {
             assert!(self.dictionary.contains(&*guess));
             let correctness = Correctness::compute(answer, &guess);
             history.push(Guess {
-                word: guess,
+                word: Cow::Owned(guess),
                 mask: correctness,
             });
         }
@@ -95,23 +95,25 @@ impl Correctness {
     }
 }
 
-pub struct Guess {
-    pub word: String,
+pub struct Guess<'a> {
+    pub word: Cow<'a, str>,
     pub mask: [Correctness; 5],
 }
 
-impl Guess {
+impl Guess<'_> {
     pub fn matches(&self, word: &str) -> bool {
         assert_eq!(self.word.len(), 5);
         assert_eq!(word.len(), 5);
+
+
 
         // First, check greens
         let mut used = [false; 5];
         for (i, ((g, &m), w)) in self
             .word
-            .chars()
+            .bytes()
             .zip(&self.mask)
-            .zip(word.chars())
+            .zip(word.bytes())
             .enumerate()
         {
             if m == Correctness::Correct {
@@ -123,7 +125,7 @@ impl Guess {
             }
         }
 
-        for (i, (w, &m)) in word.chars().zip(&self.mask).enumerate() {
+        for (i, (w, &m)) in word.bytes().zip(&self.mask).enumerate() {
             if m == Correctness::Correct {
                 // must be correct, or we'd have returned in the earlier loop
                 continue;
@@ -132,7 +134,7 @@ impl Guess {
             let mut plausible = true;
             if self
                 .word
-                .chars()
+                .bytes()
                 .zip(&self.mask)
                 .enumerate()
                 .any(|(j, (g, m))| {
