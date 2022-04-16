@@ -43,7 +43,7 @@ impl Guesser for Allocs {
             //
             // for word_i, the goodness is the sum of the goodness of each possible pattern we
             // _might_ see as a result of guessing it, multiplied by the likelihood of that pattern
-            // occuring.
+            // occuring. 
             // TODO: how do we compute this?
             // - SUM_i p_i * log_2(p_i)
             let mut sum = 0.0;
